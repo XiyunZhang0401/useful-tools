@@ -5,72 +5,246 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>有用工具</title>
 <style>
+  :root {
+    --paper: #efe9dd;
+    --paper-light: #f7f3ec;
+    --ink: #2c1810;
+    --ink-soft: #5a4035;
+    --ink-muted: #8a7a6e;
+    --ink-faint: #b8aba0;
+    --accent: #b8432f;
+    --accent-dim: rgba(184,67,47,0.06);
+    --stamp: #2d5016;
+    --stamp-dim: rgba(45,80,22,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #f5f6fa;
-    color: #2c3e50;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 60px 20px;
+    padding: 48px 20px;
+    -webkit-font-smoothing: antialiased;
   }
-  .container { max-width: 680px; width: 100%; }
-  h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 8px;
+
+  /* Subtle paper grain */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  .container { max-width: 600px; width: 100%; }
+
+  /* Header */
+  .header {
     text-align: center;
+    margin-bottom: 48px;
+    padding-top: 12px;
   }
-  .subtitle {
-    color: #7f8c8d;
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 1rem;
-  }
-  .tool-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: box-shadow 0.2s;
-    display: flex;
-    justify-content: space-between;
+  .header-icon {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--ink);
+    color: var(--paper-light);
+    font-size: 26px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 0 rgba(44,24,16,0.08);
+  }
+  .header h1 {
+    font-family: "IBM Plex Serif", "Noto Serif SC", Georgia, serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .header .subtitle {
+    color: var(--ink-muted);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  /* Tool card */
+  .tool-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--paper-light);
+    border-radius: var(--radius);
+    padding: 20px 24px;
     text-decoration: none;
     color: inherit;
+    border: 1px solid rgba(44,24,16,0.06);
+    box-shadow: 0 1px 0 rgba(44,24,16,0.04), 0 0 0 1px rgba(44,24,16,0.04);
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    cursor: pointer;
   }
-  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-  .tool-card h2 { font-size: 1.2rem; font-weight: 600; }
-  .tool-card p { color: #7f8c8d; font-size: 0.9rem; margin-top: 4px; }
-  .tool-card .arrow { color: #bdc3c7; font-size: 1.5rem; }
+  .tool-card:hover {
+    border-color: rgba(44,24,16,0.12);
+    box-shadow: 0 4px 20px rgba(44,24,16,0.06), 0 0 0 1px rgba(44,24,16,0.06);
+    transform: translateY(-2px);
+  }
+  .tool-card:active {
+    transform: translateY(0);
+    border-color: var(--accent);
+  }
+
+  .tool-card .card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: var(--accent-dim);
+    transition: background 0.3s;
+  }
+  .tool-card:hover .card-icon {
+    background: rgba(184,67,47,0.12);
+  }
+
+  .tool-card .card-body { flex: 1; min-width: 0; }
+  .tool-card .card-body h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+    letter-spacing: 0.2px;
+  }
+  .tool-card .card-body p {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+
+  .tool-card .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .tool-card .card-tags span {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(44,24,16,0.04);
+    color: var(--ink-soft);
+    letter-spacing: 0.2px;
+  }
+  .tool-card .card-tags .new {
+    background: var(--stamp-dim);
+    color: var(--stamp);
+  }
+
+  .tool-card .card-arrow {
+    flex-shrink: 0;
+    color: var(--ink-faint);
+    font-size: 18px;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    line-height: 1;
+  }
+  .tool-card:hover .card-arrow {
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  /* Privacy banner */
+  .privacy-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px;
+    padding: 14px 20px;
+    background: rgba(44,24,16,0.02);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(44,24,16,0.04);
+  }
+  .privacy-note .icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    opacity: 0.35;
+  }
+  .privacy-note .text {
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+    letter-spacing: 0.1px;
+  }
+
+  /* Footer */
   footer {
     margin-top: 60px;
     text-align: center;
-    font-size: 0.85rem;
-    color: #95a5a6;
+    font-size: 11.5px;
+    color: var(--ink-faint);
   }
-  footer a { color: #3498db; text-decoration: none; }
+  footer a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  footer a:hover { border-bottom-color: var(--ink-faint); }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    body { padding: 32px 16px; }
+    .header { margin-bottom: 36px; }
+    .header .header-icon { width: 48px; height: 48px; font-size: 22px; border-radius: 14px; }
+    .header h1 { font-size: 22px; }
+    .tool-card { padding: 16px 18px; gap: 16px; }
+    .tool-card .card-icon { width: 40px; height: 40px; font-size: 18px; }
+    .tool-card .card-body h2 { font-size: 15px; }
+  }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>有用工具</h1>
-  <p class="subtitle">纯前端 · 文件不上传服务器</p>
+
+  <div class="header">
+    <div class="header-icon">🛠</div>
+    <h1>有用工具</h1>
+    <p class="subtitle">纯前端 · 所有操作在浏览器本地完成</p>
+  </div>
 
   <a class="tool-card" href="pdf-tools/">
-    <div>
+    <div class="card-icon">📄</div>
+    <div class="card-body">
       <h2>PDF 装订坊</h2>
-      <p>合并 · 插入 · 导出 · 图片转 PDF</p>
+      <p>合并、插入、导出、图片转 PDF、PPT 转 PDF</p>
+      <div class="card-tags">
+        <span>PDF</span>
+        <span>PPT</span>
+        <span class="new">新增</span>
+      </div>
     </div>
-    <div class="arrow">→</div>
+    <div class="card-arrow">→</div>
   </a>
 
+  <div class="privacy-note">
+    <span class="icon">🔒</span>
+    <span class="text">所有文件在浏览器本地处理，<strong>不会上传到任何服务器</strong>。离线亦可使用。</span>
+  </div>
+
   <footer>
-    <p>更多工具开发中…</p>
-    <p><a href="https://github.com/XiyunZhang0401/useful-tools">GitHub</a></p>
+    <p><a href="https://github.com/XiyunZhang0401/useful-tools">GitHub 仓库</a></p>
   </footer>
 </div>
 </body>
