@@ -6,6 +6,7 @@
 <title>PDF 装订坊 · 排印 装订 导出</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Courier+Prime:wght@400;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -940,6 +941,10 @@ h1::after {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M10 12V5M7 8l3-3 3 3"/></svg>
       <span>导出模式</span>
     </span>
+    <span class="nav-item" data-tab="pptx2pdf" onclick="switchTab('pptx2pdf')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="9" rx="1.5"/><path d="M3 12h14v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z"/><path d="M8 7l2-2 2 2"/><path d="M10 5v5"/></svg>
+      <span>PPT → PDF</span>
+    </span>
   </div>
   <div class="footer">本地处理 · 不上传任何文件</div>
 </div>
@@ -970,7 +975,6 @@ h1::after {
     <div class="preview-info" id="mergePreviewInfo"></div>
     <iframe class="preview-frame" id="mergePreviewIframe"></iframe>
     <div style="margin-top:10px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="mergeDownload()">下载</button>
       <button class="btn btn-outline" onclick="mergeContinueInsert()">继续插入</button>
       <button class="btn btn-outline" onclick="mergeContinueExport()">继续导出</button>
     </div>
@@ -1002,7 +1006,6 @@ h1::after {
     <div class="preview-info" id="insertPreviewInfo"></div>
     <iframe class="preview-frame" id="insertPreviewIframe"></iframe>
     <div style="margin-top:10px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="insertDownload()">下载</button>
       <button class="btn btn-outline" onclick="insertContinue()">继续插入</button>
       <button class="btn btn-outline" onclick="insertContinueMerge()">继续合并</button>
       <button class="btn btn-outline" onclick="insertContinueExport()">继续导出</button>
@@ -1043,7 +1046,6 @@ h1::after {
     <div class="preview-info" id="imgPreviewInfo"></div>
     <iframe class="preview-frame" id="imgPreviewIframe"></iframe>
     <div style="margin-top:10px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="imgDownload()">下载</button>
       <button class="btn btn-outline" onclick="imgContinueInsert()">继续插入</button>
       <button class="btn btn-outline" onclick="imgContinueMerge()">继续合并</button>
       <button class="btn btn-outline" onclick="imgContinueExport()">继续导出</button>
@@ -1089,9 +1091,36 @@ h1::after {
     <div class="preview-header"><h2>预览</h2><button class="btn btn-outline btn-sm" onclick="exportClosePreview()">关闭预览</button></div>
     <div class="preview-info" id="exportPreviewInfo"></div>
     <iframe class="preview-frame" id="exportPreviewIframe"></iframe>
-    <div style="margin-top:10px;text-align:center;">
-      <button class="btn btn-primary" onclick="exportDownload()">导出</button>
+  </div>
+</div>
+
+<!-- ===== PPTX → PDF TAB ===== -->
+<div class="tab-content" id="tab-pptx2pdf">
+  <h1>PPT → PDF</h1>
+  <p class="subtitle">将 PowerPoint ( .pptx ) 文件批量转换为 PDF，每页幻灯片生成一页 PDF</p>
+  <div class="card">
+    <div class="drop-zone" id="pptxDropZone">
+      <span class="drop-zone-icon">📊</span>
+      <div class="drop-zone-text">点击选择 PowerPoint 文件，或拖拽到此处</div>
+      <div class="drop-zone-hint">支持 .pptx 格式（新版 PowerPoint），可选择多个文件</div>
+      <input type="file" id="pptxFileInput" multiple accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
     </div>
+    <div id="pptxFileList"><div class="empty-state">暂无文件，请添加 .pptx 文件</div></div>
+    <div class="range-bar" id="pptxOptionsBar" style="display:none;">
+      <label>页面大小：</label>
+      <select id="pptxPageSize" style="padding:5px 9px;border:1px solid var(--border);border-radius:5px;font-size:12px;outline:none;background:rgba(255,255,255,0.03);color:var(--text);font-family:inherit;cursor:pointer;">
+        <option value="auto">自动（保持幻灯片尺寸）</option>
+        <option value="A4">A4</option>
+        <option value="letter">Letter</option>
+      </select>
+      <span class="hint">选择「自动」则 PDF 页面大小与幻灯片比例一致</span>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-success" id="pptxConvertBtn" disabled>转换为 PDF</button>
+      <button class="btn btn-outline" id="pptxClearBtn" disabled>清空</button>
+    </div>
+    <div class="progress-bar" id="pptxProgress"><div class="fill" id="pptxProgressFill"></div></div>
+    <div class="status" id="pptxStatus"></div>
   </div>
 </div>
 
@@ -1360,7 +1389,6 @@ function switchTab(name) {
   clearBtn.addEventListener('click', function() { pdfs = []; lastResultBytes = null; if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; } previewCard.style.display = 'none'; previewIframe.src = ''; document.getElementById('insertActionCard').style.display = 'none'; setStatus(''); hideProgress(); render(); });
 
   window.insertClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
-  window.insertDownload = function() { if (!lastBlobUrl) return; var a = document.createElement('a'); a.href = lastBlobUrl; a.download = '插入后.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
   window.insertGetResult = function() { return lastResultBytes; };
   window.insertLoadResult = function(bytes, fileName) {
     pdfs = []; lastResultBytes = null;
@@ -1537,7 +1565,6 @@ function switchTab(name) {
   mergeBtn.addEventListener('click', mergePDFs);
   clearBtn.addEventListener('click', clearAll);
   window.mergeClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
-  window.mergeDownload = function() { if (!lastBlobUrl) return; var a = document.createElement('a'); a.href = lastBlobUrl; a.download = '合并后.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
   window.mergeGetResult = function() { return lastResultBytes; };
   window.mergeLoadResult = function(bytes, fileName) {
     files = [];
@@ -1708,7 +1735,6 @@ function switchTab(name) {
   window.exportTogglePage = togglePage;
   window.exportClearFile = clearFile;
   window.exportClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
-  window.exportDownload = function() { if (!lastBlobUrl) return; var a = document.createElement('a'); a.href = lastBlobUrl; a.download = '导出.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
   window.exportLoadResult = function(bytes, fileName) {
     currentFile = null; selectedPages = new Set(); lastResultBytes = null;
     if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; }
@@ -1873,8 +1899,233 @@ function switchTab(name) {
   convertBtn.addEventListener('click', convertToPDF);
   clearBtn.addEventListener('click', clearAll);
   window.imgClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
-  window.imgDownload = function() { if (!lastBlobUrl) return; var a = document.createElement('a'); a.href = lastBlobUrl; a.download = '图片转PDF.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
   window.imgGetResult = function() { return lastResultBytes; };
+})();
+
+// ============================================================
+// ====================== PPTX → PDF MODE ======================
+// ============================================================
+(function(){
+  const dropZone = document.getElementById('pptxDropZone');
+  const fileInput = document.getElementById('pptxFileInput');
+  const fileListEl = document.getElementById('pptxFileList');
+  const optionsBar = document.getElementById('pptxOptionsBar');
+  const pageSizeSelect = document.getElementById('pptxPageSize');
+  const convertBtn = document.getElementById('pptxConvertBtn');
+  const clearBtn = document.getElementById('pptxClearBtn');
+  const progressBar = document.getElementById('pptxProgress');
+  const progressFill = document.getElementById('pptxProgressFill');
+  const statusEl = document.getElementById('pptxStatus');
+
+  var pptxFiles = [];
+
+  function setStatus(msg) { statusEl.textContent = msg; }
+  function setProgress(pct) { progressBar.style.display = 'block'; progressFill.style.width = pct + '%'; }
+  function hideProgress() { progressBar.style.display = 'none'; progressFill.style.width = '0%'; }
+
+  function addPptxFiles(newFiles) {
+    for (var fi = 0; fi < newFiles.length; fi++) {
+      var f = newFiles[fi];
+      if (!f.name.toLowerCase().endsWith('.pptx')) { showToast('跳过（仅支持 .pptx）: ' + f.name); continue; }
+      var dup = false;
+      for (var di = 0; di < pptxFiles.length; di++) { if (pptxFiles[di].name === f.name && pptxFiles[di].size === f.size) { dup = true; break; } }
+      if (dup) continue;
+      var id = Date.now() + '_' + Math.random().toString(36).slice(2,6);
+      pptxFiles.push({ id: id, name: f.name, size: f.size, file: f });
+    }
+    renderList();
+  }
+
+  function removePptxFile(id) {
+    var idx = -1;
+    for (var i = 0; i < pptxFiles.length; i++) { if (String(pptxFiles[i].id) === String(id)) { idx = i; break; } }
+    if (idx >= 0) pptxFiles.splice(idx, 1);
+    renderList();
+  }
+
+  function clearAllPptx() {
+    pptxFiles = [];
+    renderList();
+  }
+
+  function renderList() {
+    if (pptxFiles.length === 0) {
+      fileListEl.innerHTML = '<div class="empty-state">暂无文件，请添加 .pptx 文件</div>';
+      convertBtn.disabled = true; clearBtn.disabled = true; optionsBar.style.display = 'none';
+      return;
+    }
+    convertBtn.disabled = false; clearBtn.disabled = false; optionsBar.style.display = 'flex';
+    var html = '';
+    for (var i = 0; i < pptxFiles.length; i++) {
+      var f = pptxFiles[i];
+      html += '<div class="img-item" data-index="' + i + '"><span class="drag-handle">⠿</span><span class="img-order">#' + (i+1) + '</span><div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;opacity:0.4;">📊</div><div class="img-info"><div class="img-name">' + escHtml(f.name) + '</div><div class="img-size">' + formatSize(f.size) + '</div></div><button class="remove-btn" data-id="' + f.id + '" title="移除">×</button></div>';
+    }
+    fileListEl.innerHTML = html;
+    fileListEl.querySelectorAll('.remove-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) { e.stopPropagation(); removePptxFile(btn.dataset.id); });
+    });
+  }
+
+  async function convertPptxToPdf() {
+    if (pptxFiles.length === 0) return;
+    convertBtn.disabled = true;
+    setStatus('加载渲染引擎...'); setProgress(0);
+
+    try {
+      // Dynamic import: ESM from esm.sh (resolves bare imports like jszip, echarts)
+      var pptxModule = await import('https://esm.sh/@aiden0z/pptx-renderer@1.2.0');
+      var PptxViewer = pptxModule.PptxViewer;
+      var RECOMMENDED_ZIP_LIMITS = pptxModule.RECOMMENDED_ZIP_LIMITS;
+
+      var totalFiles = pptxFiles.length;
+      var pageSize = pageSizeSelect.value;
+      var doneCount = 0;
+
+      setProgress(1);
+      setStatus('开始转换 ' + totalFiles + ' 个文件...');
+
+      // Process each PPTX file separately → each becomes its own PDF download
+      for (var fi = 0; fi < totalFiles; fi++) {
+        var file = pptxFiles[fi];
+        var pdfName = file.name.replace(/\.pptx$/i, '') + '.pdf';
+
+        setStatus('处理: ' + file.name);
+
+        // Parse PPTX
+        var buf = await file.file.arrayBuffer();
+
+        var renderContainer = document.createElement('div');
+        renderContainer.style.position = 'absolute';
+        renderContainer.style.left = '-9999px';
+        renderContainer.style.top = '0';
+        renderContainer.style.width = '1280px';
+        document.body.appendChild(renderContainer);
+
+        try {
+          var viewer = await PptxViewer.open(buf, renderContainer, {
+            zipLimits: RECOMMENDED_ZIP_LIMITS,
+            fitMode: 'contain',
+            width: 1280,
+            lazySlides: false,
+            lazyMedia: false,
+          });
+
+          var slideCount = viewer.slideCount;
+          var sw = viewer.slideWidth;
+          var sh = viewer.slideHeight;
+
+          if (slideCount === 0) {
+            showToast('跳过空文件: ' + file.name);
+            viewer.destroy();
+            doneCount++;
+            continue;
+          }
+
+          var pdfDoc = await PDFLib.PDFDocument.create();
+
+          for (var si = 0; si < slideCount; si++) {
+            var pct = (doneCount / totalFiles) * 100 + (si / slideCount) * (100 / totalFiles);
+            setProgress(Math.min(pct, 99));
+            setStatus(file.name + ' — 第 ' + (si+1) + '/' + slideCount + ' 页');
+
+            var slideContainer = document.createElement('div');
+            slideContainer.style.position = 'relative';
+            var isWide = (sw / sh) > 1.3;
+            var captureW = isWide ? 1280 : 960;
+            var captureH = Math.round(captureW * (sh / sw));
+            slideContainer.style.width = captureW + 'px';
+            slideContainer.style.height = captureH + 'px';
+            document.body.appendChild(slideContainer);
+
+            var handle = viewer.renderSlideToContainer(si, slideContainer, 1);
+            await handle.ready;
+
+            await new Promise(function(r) { setTimeout(r, 80); });
+
+            var canvas = await html2canvas(slideContainer, {
+              useCORS: true,
+              backgroundColor: '#ffffff',
+              scale: 2,
+              logging: false,
+            });
+
+            var jpegData = canvas.toDataURL('image/jpeg', 0.92);
+            var binStr = atob(jpegData.split(',')[1]);
+            var len = binStr.length;
+            var imgArr = new Uint8Array(len);
+            for (var bi = 0; bi < len; bi++) imgArr[bi] = binStr.charCodeAt(bi);
+            var img = await pdfDoc.embedJpg(imgArr);
+
+            var iw = img.width;
+            var ih = img.height;
+
+            if (pageSize === 'A4') {
+              var a4w = 595.28, a4h = 841.89;
+              var s = Math.min(a4w / iw, a4h / ih);
+              var pg = pdfDoc.addPage([a4w, a4h]);
+              pg.drawImage(img, { x: (a4w - iw * s) / 2, y: (a4h - ih * s) / 2, width: iw * s, height: ih * s });
+            } else if (pageSize === 'letter') {
+              var lw = 612, lh = 792;
+              var s = Math.min(lw / iw, lh / ih);
+              var pg = pdfDoc.addPage([lw, lh]);
+              pg.drawImage(img, { x: (lw - iw * s) / 2, y: (lh - ih * s) / 2, width: iw * s, height: ih * s });
+            } else {
+              var pg = pdfDoc.addPage([iw, ih]);
+              pg.drawImage(img, { x: 0, y: 0, width: iw, height: ih });
+            }
+
+            handle.dispose();
+            slideContainer.remove();
+          }
+
+          viewer.destroy();
+
+          // Save & auto-download this file's PDF
+          setStatus('下载: ' + pdfName);
+          var bytes = await pdfDoc.save();
+          var blob = new Blob([bytes], {type:'application/pdf'});
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.download = pdfName;
+          document.body.appendChild(a); a.click();
+          document.body.removeChild(a);
+          setTimeout(function(u) { URL.revokeObjectURL(u); }, 60000, url);
+
+          showToast('✓ ' + pdfName + ' (' + slideCount + ' 页)');
+          doneCount++;
+
+        } catch (fileErr) {
+          showToast('失败: ' + file.name + ' — ' + fileErr.message);
+          doneCount++;
+        } finally {
+          renderContainer.remove();
+        }
+      }
+
+      setProgress(100);
+      setStatus('完成！共下载 ' + doneCount + '/' + totalFiles + ' 个 PDF');
+
+
+    } catch(err) {
+      showToast('失败：' + err.message);
+      setStatus('出错了');
+      console.error(err);
+    } finally {
+      convertBtn.disabled = false;
+      setTimeout(hideProgress, 3000);
+    }
+  }
+
+  // ----- Event listeners -----
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  fileInput.addEventListener('change', function() { addPptxFiles(fileInput.files); fileInput.value = ''; });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.classList.remove('dragover'); addPptxFiles(e.dataTransfer.files); });
+  convertBtn.addEventListener('click', convertPptxToPdf);
+  clearBtn.addEventListener('click', clearAllPptx);
+
+  // ----- Exported window functions -----
 })();
 
 // ===== Cross-module continuation handlers =====

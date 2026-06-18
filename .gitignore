@@ -1,3 +1,5 @@
 *.pdf
 .claude/
+.reasonix/
+reasonix.toml
 style-preview.html
