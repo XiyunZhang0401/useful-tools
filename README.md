@@ -9,14 +9,16 @@
 
 ## 工具
 
-| 工具                 | 说明                         | 链接                                                              |
-| -------------------- | ---------------------------- | ----------------------------------------------------------------- |
-| **PDF 装订坊** | 合并、插入、导出、图片转 PDF | [在线使用](https://xiyunzhang0401.github.io/useful-tools/pdf-tools/) |
+| 工具 | 说明 | 链接 |
+| --- | --- | --- |
+| **PDF 装订坊** | 合并、插入、导出、PPT 转 PDF、图片转 PDF | [在线使用](https://xiyunzhang0401.github.io/useful-tools/pdf-tools/) |
 
 ## 技术
 
 - 纯 HTML/CSS/JS，无后端依赖
 - [pdf-lib](https://pdf-lib.org/) + [PDF.js](https://mozilla.github.io/pdf.js/) — PDF 处理
+- [@aiden0z/pptx-renderer](https://github.com/aiden0z/pptx-renderer) — PPTX 幻灯片渲染
+- [html2canvas](https://html2canvas.hertzen.com/) — 幻灯片截图
 - 支持 Chrome / Edge / Firefox
 
 > **Windows 用户注意**：下载的 PDF 如果打开时报错，请右键该 PDF 文件 → **属性** → 勾选 **解除锁定** → 确定，然后重新打开。
