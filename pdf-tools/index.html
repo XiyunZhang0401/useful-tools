@@ -1418,7 +1418,7 @@ function switchTab(name) {
   execBtn.addEventListener('click', executeInsert);
   clearBtn.addEventListener('click', function() { pdfs = []; lastResultBytes = null; if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; } previewCard.style.display = 'none'; previewIframe.src = ''; document.getElementById('insertActionCard').style.display = 'none'; setStatus(''); hideProgress(); render(); });
 
-  window.insertClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
+  window.insertClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; } };
   window.insertGetResult = function() { return lastResultBytes; };
   window.insertLoadResult = function(bytes, fileName) {
     pdfs = []; lastResultBytes = null;
@@ -1594,7 +1594,7 @@ function switchTab(name) {
   dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
   mergeBtn.addEventListener('click', mergePDFs);
   clearBtn.addEventListener('click', clearAll);
-  window.mergeClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
+  window.mergeClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; } };
   window.mergeGetResult = function() { return lastResultBytes; };
   window.mergeLoadResult = function(bytes, fileName) {
     files = [];
@@ -1764,7 +1764,7 @@ function switchTab(name) {
   window.exportOnRangeInput = onRangeInput;
   window.exportTogglePage = togglePage;
   window.exportClearFile = clearFile;
-  window.exportClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
+  window.exportClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; } };
   window.exportLoadResult = function(bytes, fileName) {
     currentFile = null; selectedPages = new Set(); lastResultBytes = null;
     if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; }
@@ -1928,7 +1928,7 @@ function switchTab(name) {
   dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
   convertBtn.addEventListener('click', convertToPDF);
   clearBtn.addEventListener('click', clearAll);
-  window.imgClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; };
+  window.imgClosePreview = function() { previewCard.style.display = 'none'; previewIframe.src = ''; if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; } };
   window.imgGetResult = function() { return lastResultBytes; };
 })();
 
@@ -2119,7 +2119,7 @@ function switchTab(name) {
           a.href = url; a.download = pdfName;
           document.body.appendChild(a); a.click();
           document.body.removeChild(a);
-          setTimeout(function(u) { URL.revokeObjectURL(u); }, 60000, url);
+          URL.revokeObjectURL(url);
 
           showToast('✓ ' + pdfName + ' (' + slideCount + ' 页)');
           doneCount++;
