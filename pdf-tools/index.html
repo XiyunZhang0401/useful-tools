@@ -411,6 +411,16 @@ h1 {
   border-radius: var(--radius-sm);
   background: var(--paper-light);
 }
+.preview-actions {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 
 /* ===== Merge file items ===== */
 .file-item {
@@ -428,7 +438,8 @@ h1 {
 }
 .file-item:hover {
   border-color: var(--ink-faint);
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.55);
+  box-shadow: 0 1px 4px rgba(44,24,16,0.04);
 }
 .file-item:active { cursor: grabbing; }
 .file-item.dragging { opacity: 0.35; }
@@ -759,6 +770,25 @@ h1 {
 }
 .range-row input[type="text"] { width: 180px; }
 .range-row .hint { font-size: 10px; color: var(--ink-faint); }
+.range-bar select {
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  outline: none;
+  background: rgba(255,255,255,0.4);
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.range-bar select:hover { border-color: var(--ink-faint); }
+.range-bar select:focus { border-color: var(--accent); }
+.preset-bar .btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
 .summary-bar {
   font-size: 11.5px;
   color: var(--ink-muted);
@@ -974,7 +1004,7 @@ h1::after {
     <div class="preview-header"><h2>预览</h2><button class="btn btn-outline btn-sm" onclick="mergeClosePreview()">关闭预览</button></div>
     <div class="preview-info" id="mergePreviewInfo"></div>
     <iframe class="preview-frame" id="mergePreviewIframe"></iframe>
-    <div style="margin-top:10px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <div class="preview-actions">
       <button class="btn btn-outline" onclick="mergeContinueInsert()">继续插入</button>
       <button class="btn btn-outline" onclick="mergeContinueExport()">继续导出</button>
     </div>
@@ -1005,7 +1035,7 @@ h1::after {
     <div class="preview-header"><h2>预览</h2><button class="btn btn-outline btn-sm" onclick="insertClosePreview()">关闭预览</button></div>
     <div class="preview-info" id="insertPreviewInfo"></div>
     <iframe class="preview-frame" id="insertPreviewIframe"></iframe>
-    <div style="margin-top:10px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <div class="preview-actions">
       <button class="btn btn-outline" onclick="insertContinue()">继续插入</button>
       <button class="btn btn-outline" onclick="insertContinueMerge()">继续合并</button>
       <button class="btn btn-outline" onclick="insertContinueExport()">继续导出</button>
@@ -1027,7 +1057,7 @@ h1::after {
     <div id="imgFileList"><div class="empty-state">暂无文件，请添加图片</div></div>
     <div class="range-bar" id="imgOptionsBar" style="display:none;">
       <label>页面大小：</label>
-      <select id="imgPageSize" style="padding:5px 9px;border:1px solid var(--border);border-radius:5px;font-size:12px;outline:none;background:rgba(255,255,255,0.03);color:var(--text);font-family:inherit;cursor:pointer;">
+      <select id="imgPageSize">
         <option value="auto">自动（匹配图片）</option>
         <option value="A4">A4</option>
         <option value="letter">Letter</option>
@@ -1045,7 +1075,7 @@ h1::after {
     <div class="preview-header"><h2>预览</h2><button class="btn btn-outline btn-sm" onclick="imgClosePreview()">关闭预览</button></div>
     <div class="preview-info" id="imgPreviewInfo"></div>
     <iframe class="preview-frame" id="imgPreviewIframe"></iframe>
-    <div style="margin-top:10px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <div class="preview-actions">
       <button class="btn btn-outline" onclick="imgContinueInsert()">继续插入</button>
       <button class="btn btn-outline" onclick="imgContinueMerge()">继续合并</button>
       <button class="btn btn-outline" onclick="imgContinueExport()">继续导出</button>
@@ -1108,7 +1138,7 @@ h1::after {
     <div id="pptxFileList"><div class="empty-state">暂无文件，请添加 .pptx 文件</div></div>
     <div class="range-bar" id="pptxOptionsBar" style="display:none;">
       <label>页面大小：</label>
-      <select id="pptxPageSize" style="padding:5px 9px;border:1px solid var(--border);border-radius:5px;font-size:12px;outline:none;background:rgba(255,255,255,0.03);color:var(--text);font-family:inherit;cursor:pointer;">
+      <select id="pptxPageSize">
         <option value="auto">自动（保持幻灯片尺寸）</option>
         <option value="A4">A4</option>
         <option value="letter">Letter</option>
