@@ -2002,8 +2002,8 @@ function switchTab(name) {
     setStatus('加载渲染引擎...'); setProgress(0);
 
     try {
-      // Dynamic import: ESM from esm.sh (resolves bare imports like jszip, echarts)
-      var pptxModule = await import('https://esm.sh/@aiden0z/pptx-renderer@1.2.0');
+      // Dynamic import: bundled ESM from esm.sh (?bundle = single file, no sub-requests)
+      var pptxModule = await import('https://esm.sh/@aiden0z/pptx-renderer@1.2.0?bundle');
       var PptxViewer = pptxModule.PptxViewer;
       var RECOMMENDED_ZIP_LIMITS = pptxModule.RECOMMENDED_ZIP_LIMITS;
 
