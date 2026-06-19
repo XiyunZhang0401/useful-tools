@@ -2119,7 +2119,8 @@ function switchTab(name) {
           a.href = url; a.download = pdfName;
           document.body.appendChild(a); a.click();
           document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          // 延迟释放，确保浏览器完成下载读取
+          setTimeout(function(u) { URL.revokeObjectURL(u); }, 5000, url);
 
           showToast('✓ ' + pdfName + ' (' + slideCount + ' 页)');
           doneCount++;
