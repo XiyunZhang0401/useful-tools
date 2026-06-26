@@ -1682,7 +1682,7 @@ function switchTab(name) {
       var doc = await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
       currentFile.numPages = doc.numPages;
       var thumbs = [];
-      for (var i = 1; i <= Math.min(doc.numPages, 20); i++) {
+      for (var i = 1; i <= doc.numPages; i++) {
         try { var pg = await doc.getPage(i); var vp = pg.getViewport({scale:0.28}); var c = document.createElement('canvas'); c.width=vp.width; c.height=vp.height; await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise; thumbs.push(c.toDataURL('image/jpeg',0.6)); } catch(e) { thumbs.push(null); }
       }
       doc.destroy();
