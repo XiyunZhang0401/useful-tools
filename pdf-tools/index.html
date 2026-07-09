@@ -1679,6 +1679,7 @@ function switchTab(name) {
     fileInfoEl.innerHTML = '<div class="file-info-card"><span class="icon">📄</span><div class="info"><div class="name">' + escHtml(file.name) + '</div><div class="meta">加载中...</div></div><button class="remove-btn" onclick="exportClearFile()">×</button></div>';
     try {
       var buf = await file.arrayBuffer();
+      currentFile.buf = buf;
       var doc = await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
       currentFile.numPages = doc.numPages;
       var thumbs = [];
@@ -1741,7 +1742,7 @@ function switchTab(name) {
     exportBtn.disabled = true; previewCard.style.display = 'none';
     setStatus('导出中...'); setProgress(0);
     try {
-      var buf = await currentFile.file.arrayBuffer();
+      var buf = currentFile.buf;
       var srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true});
       var newDoc = await PDFLib.PDFDocument.create();
       for (var i = 0; i < sorted.length; i++) { setProgress((i/sorted.length)*90); var [c] = await newDoc.copyPages(srcDoc, [sorted[i]]); newDoc.addPage(c); }
