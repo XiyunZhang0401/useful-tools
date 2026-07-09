@@ -1743,9 +1743,21 @@ function switchTab(name) {
     setStatus('导出中...'); setProgress(0);
     try {
       var buf = currentFile.buf;
+      if (!buf || buf.byteLength === 0) { showToast('文件数据无效，请重新加载'); return; }
       var srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true});
       var newDoc = await PDFLib.PDFDocument.create();
-      for (var i = 0; i < sorted.length; i++) { setProgress((i/sorted.length)*90); var [c] = await newDoc.copyPages(srcDoc, [sorted[i]]); newDoc.addPage(c); }
+      var failed = 0;
+      for (var i = 0; i < sorted.length; i++) {
+        setProgress((i/sorted.length)*90);
+        try {
+          var [c] = await newDoc.copyPages(srcDoc, [sorted[i]]);
+          newDoc.addPage(c);
+        } catch(pageErr) {
+          failed++;
+          showToast('跳过第 ' + (sorted[i]+1) + ' 页（无法复制）');
+        }
+      }
+      if (newDoc.getPageCount() === 0) { showToast('没有页面可导出'); return; }
       setProgress(95); setStatus('生成中...');
       var bytes = await newDoc.save(); setProgress(100); setStatus('完成！');
       lastResultBytes = bytes;
@@ -1753,10 +1765,10 @@ function switchTab(name) {
       var blob = new Blob([bytes], {type:'application/pdf'});
       lastBlobUrl = URL.createObjectURL(blob);
       previewIframe.src = lastBlobUrl;
-      previewInfo.textContent = '导出完成 · ' + newDoc.getPageCount() + ' 页 · ' + (blob.size/1024).toFixed(1) + ' KB';
+      previewInfo.textContent = '导出' + newDoc.getPageCount() + '页 · ' + (blob.size/1024).toFixed(1) + ' KB' + (failed>0?'（跳过'+failed+'页）':'');
       previewCard.style.display = 'block';
       previewCard.scrollIntoView({behavior:'smooth',block:'nearest'});
-      showToast('导出完成！共 ' + newDoc.getPageCount() + ' 页');
+      showToast('导出完成！共 ' + newDoc.getPageCount() + ' 页' + (failed>0?'，跳过'+failed+'页':''));
     } catch(err) { showToast('失败：'+err.message); setStatus('出错了'); }
     finally { exportBtn.disabled = false; setTimeout(hideProgress, 3000); }
   }
