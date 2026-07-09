@@ -1680,6 +1680,10 @@ function switchTab(name) {
     try {
       var buf = await file.arrayBuffer();
       currentFile.buf = buf;
+      var srcDoc;
+      try { srcDoc = await PDFLib.PDFDocument.load(buf); }
+      catch(e0) { srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true}); }
+      currentFile.srcDoc = srcDoc;
       var doc = await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
       currentFile.numPages = doc.numPages;
       var thumbs = [];
@@ -1742,20 +1746,8 @@ function switchTab(name) {
     exportBtn.disabled = true; previewCard.style.display = 'none';
     setStatus('导出中...'); setProgress(0);
     try {
-      var raw = currentFile.buf;
-      if (!raw || raw.byteLength === 0) { showToast('文件数据无效，请重新加载'); return; }
-
-      // Create a fresh copy to avoid any buffer-sharing issues
-      var buf = new Uint8Array(raw.byteLength);
-      buf.set(new Uint8Array(raw));
-
-      var srcDoc;
-      try {
-        srcDoc = await PDFLib.PDFDocument.load(buf);
-      } catch(e1) {
-        try { srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true}); }
-        catch(e2) { showToast('无法解析 PDF：' + e2.message); return; }
-      }
+      var srcDoc = currentFile.srcDoc;
+      if (!srcDoc) { showToast('文件数据无效，请重新加载'); return; }
 
       var newDoc = await PDFLib.PDFDocument.create();
       var failed = 0;
