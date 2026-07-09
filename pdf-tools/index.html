@@ -1742,9 +1742,21 @@ function switchTab(name) {
     exportBtn.disabled = true; previewCard.style.display = 'none';
     setStatus('导出中...'); setProgress(0);
     try {
-      var buf = currentFile.buf;
-      if (!buf || buf.byteLength === 0) { showToast('文件数据无效，请重新加载'); return; }
-      var srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true});
+      var raw = currentFile.buf;
+      if (!raw || raw.byteLength === 0) { showToast('文件数据无效，请重新加载'); return; }
+
+      // Create a fresh copy to avoid any buffer-sharing issues
+      var buf = new Uint8Array(raw.byteLength);
+      buf.set(new Uint8Array(raw));
+
+      var srcDoc;
+      try {
+        srcDoc = await PDFLib.PDFDocument.load(buf);
+      } catch(e1) {
+        try { srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true}); }
+        catch(e2) { showToast('无法解析 PDF：' + e2.message); return; }
+      }
+
       var newDoc = await PDFLib.PDFDocument.create();
       var failed = 0;
       for (var i = 0; i < sorted.length; i++) {
@@ -1759,7 +1771,13 @@ function switchTab(name) {
       }
       if (newDoc.getPageCount() === 0) { showToast('没有页面可导出'); return; }
       setProgress(95); setStatus('生成中...');
-      var bytes = await newDoc.save(); setProgress(100); setStatus('完成！');
+      var bytes;
+      try {
+        bytes = await newDoc.save();
+      } catch(saveErr) {
+        showToast('生成 PDF 失败：' + saveErr.message); return;
+      }
+      setProgress(100); setStatus('完成！');
       lastResultBytes = bytes;
       if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
       var blob = new Blob([bytes], {type:'application/pdf'});
