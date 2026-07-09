@@ -1684,6 +1684,8 @@ function switchTab(name) {
       try { srcDoc = await PDFLib.PDFDocument.load(buf); }
       catch(e0) { srcDoc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true}); }
       currentFile.srcDoc = srcDoc;
+      // 验证文档是否可用（加密 PDF 加载后内部对象可能不可用）
+      currentFile.needsRender = !(await srcDoc.save().then(function(b){return PDFLib.PDFDocument.load(b);}).then(function(){return true;}).catch(function(){return false;}));
       var doc = await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
       currentFile.numPages = doc.numPages;
       var thumbs = [];
@@ -1751,14 +1753,39 @@ function switchTab(name) {
 
       var newDoc = await PDFLib.PDFDocument.create();
       var failed = 0;
-      for (var i = 0; i < sorted.length; i++) {
-        setProgress((i/sorted.length)*90);
-        try {
-          var [c] = await newDoc.copyPages(srcDoc, [sorted[i]]);
-          newDoc.addPage(c);
-        } catch(pageErr) {
-          failed++;
-          showToast('跳过第 ' + (sorted[i]+1) + ' 页（无法复制）');
+
+      if (currentFile.needsRender) {
+        // Render fallback: copyPages 不可用，用 PDF.js 渲染页面为图片嵌入
+        var pdfjsDoc = await pdfjsLib.getDocument({data: currentFile.buf.slice(0)}).promise;
+        for (var i = 0; i < sorted.length; i++) {
+          setProgress((i/sorted.length)*90);
+          try {
+            var pg = await pdfjsDoc.getPage(sorted[i]+1);
+            var vp = pg.getViewport({scale: 2});
+            var canvas = document.createElement('canvas');
+            canvas.width = vp.width; canvas.height = vp.height;
+            await pg.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+            var jpegBlob = await new Promise(function(r){canvas.toBlob(r,'image/jpeg',0.95);});
+            if (!jpegBlob) throw new Error('渲染失败');
+            var img = await newDoc.embedJpg(await jpegBlob.arrayBuffer());
+            var page = newDoc.addPage([img.width, img.height]);
+            page.drawImage(img, {x:0,y:0,width:img.width,height:img.height});
+          } catch(pageErr) {
+            failed++;
+            showToast('跳过第 ' + (sorted[i]+1) + ' 页');
+          }
+        }
+        pdfjsDoc.destroy();
+      } else {
+        for (var i = 0; i < sorted.length; i++) {
+          setProgress((i/sorted.length)*90);
+          try {
+            var [c] = await newDoc.copyPages(srcDoc, [sorted[i]]);
+            newDoc.addPage(c);
+          } catch(pageErr) {
+            failed++;
+            showToast('跳过第 ' + (sorted[i]+1) + ' 页（无法复制）');
+          }
         }
       }
       if (newDoc.getPageCount() === 0) { showToast('没有页面可导出'); return; }
